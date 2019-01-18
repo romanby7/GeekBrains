@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class ClientHandler {
+
+
     private String nickname;
     private Server server;
     private Socket socket;
@@ -14,6 +16,10 @@ public class ClientHandler {
 
     public String getNickname() {
         return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public ClientHandler(Server server, Socket socket) {
@@ -49,6 +55,11 @@ public class ClientHandler {
                                 String[] tokens = msg.split("\\s", 3);
                                 server.privateMsg(this, tokens[1], tokens[2]);
                             }
+                            if(msg.startsWith("/changenick ")) {
+                                String[] tokens = msg.split("\\s", 2);
+                                server.changeNick(this, tokens[1]);
+                            }
+
                         } else {
                             server.broadcastMsg(nickname + ": " + msg);
                         }

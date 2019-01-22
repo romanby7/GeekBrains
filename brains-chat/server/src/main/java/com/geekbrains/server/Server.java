@@ -15,7 +15,10 @@ public class Server {
 
     public Server() {
         clients = new Vector<>();
-        authService = new SQLiteAuthService();
+        if (!SQLHandler.connect()) {
+            throw new RuntimeException("Не удалось подключиться к БД");
+        }
+        authService = new DBAuthService();
         try (ServerSocket serverSocket = new ServerSocket(8189)) {
             System.out.println("Сервер запущен на порту 8189");
             while (true) {
@@ -23,14 +26,12 @@ public class Server {
                 new ClientHandler(this, socket);
                 System.out.println("Подключился новый клиент");
             }
-
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            System.out.println("Сервер завершил свою работу");
+            SQLHandler.disconnect();
         }
-        finally {
-            authService.shutdown();
-        }
-        System.out.println("Сервер завершил свою работу");
     }
 
     public void broadcastMsg(String msg) {
@@ -52,19 +53,6 @@ public class Server {
             }
         }
         sender.sendMsg("Клиент " + receiverNick + " не найден");
-    }
-
-    public void changeNick(ClientHandler sender, String newnick) {
-
-        if (authService.updateNickname(sender.getNickname(), newnick)) {
-            sender.setNickname(newnick);
-            sender.sendMsg("Nickname changed.");
-            broadcastClientsList();
-        }
-        else {
-            sender.sendMsg("Nickname not changed.");
-        }
-
     }
 
     public void subscribe(ClientHandler clientHandler) {

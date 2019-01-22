@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -27,6 +28,7 @@ public class Controller implements Initializable {
 
     private boolean authenticated;
     private String nickname;
+    private FileLog log;
 
     public void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
@@ -38,11 +40,13 @@ public class Controller implements Initializable {
         clientsList.setManaged(authenticated);
         if (!authenticated) {
             nickname = "";
+            log.closeWriter();
         }
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        log = new FileLog();
         setAuthenticated(false);
         clientsList.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
@@ -84,6 +88,13 @@ public class Controller implements Initializable {
         Network.setCallOnAuthenticated(args -> {
             setAuthenticated(true);
             nickname = args[0].toString();
+
+            String fileName = nickname + ".txt";
+            ArrayList<String> lastMessages = log.lastMessages(fileName, 100);
+            for (String msg: lastMessages) {
+                textArea.appendText(msg + "\n");
+            }
+            log.openWriter(fileName);
         });
 
         Network.setCallOnMsgReceived(args -> {
@@ -103,6 +114,7 @@ public class Controller implements Initializable {
                 }
             } else {
                 textArea.appendText(msg + "\n");
+                log.writeMsg(msg);
             }
         });
     }

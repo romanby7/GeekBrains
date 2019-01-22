@@ -40,14 +40,31 @@ public class ClientHandler {
                     }
                     while (true) {
                         String msg = in.readUTF();
-                        if(msg.startsWith("/")) {
+                        if (msg.startsWith("/")) {
                             if (msg.equals("/end")) {
                                 sendMsg("/end");
                                 break;
                             }
-                            if(msg.startsWith("/w ")) {
+                            if (msg.startsWith("/w ")) {
+                                // /w nick2 Hello World!
                                 String[] tokens = msg.split("\\s", 3);
                                 server.privateMsg(this, tokens[1], tokens[2]);
+                            }
+                            if (msg.startsWith("/changenick ")) {
+                                // /changenick myNewNick
+                                String[] tokens = msg.split("\\s", 2);
+                                if (tokens[1].contains(" ")) {
+                                    sendMsg("Ник не может содержать пробелов");
+                                    continue;
+                                }
+                                if (server.getAuthService().changeNick(this.nickname, tokens[1])) {
+                                    sendMsg("/yournickis " + tokens[1]);
+                                    sendMsg("Ваш ник изменен на " + tokens[1]);
+                                    this.nickname = tokens[1];
+                                    server.broadcastClientsList();
+                                } else {
+                                    sendMsg("Не удалось изменить ник. Такой ник " + tokens[1] + " уже существует");
+                                }
                             }
                         } else {
                             server.broadcastMsg(nickname + ": " + msg);

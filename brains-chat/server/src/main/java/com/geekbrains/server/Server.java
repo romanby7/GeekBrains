@@ -15,7 +15,10 @@ public class Server {
 
     public Server() {
         clients = new Vector<>();
-        authService = new SimpleAuthService();
+        if (!SQLHandler.connect()) {
+            throw new RuntimeException("Не удалось подключиться к БД");
+        }
+        authService = new DBAuthService();
         try (ServerSocket serverSocket = new ServerSocket(8189)) {
             System.out.println("Сервер запущен на порту 8189");
             while (true) {
@@ -25,8 +28,10 @@ public class Server {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            System.out.println("Сервер завершил свою работу");
+            SQLHandler.disconnect();
         }
-        System.out.println("Сервер завершил свою работу");
     }
 
     public void broadcastMsg(String msg) {

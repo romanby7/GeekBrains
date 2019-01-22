@@ -51,6 +51,7 @@ public class Controller implements Initializable {
                 msgField.requestFocus();
                 msgField.selectEnd();
             }
+
         });
         linkCallbacks();
     }
@@ -96,6 +97,9 @@ public class Controller implements Initializable {
                             clientsList.getItems().add(tokens[i]);
                         }
                     });
+                }
+                if (msg.startsWith("/yournickis ")) {
+                    nickname = msg.split("\\s")[1];
                 }
             } else {
                 textArea.appendText(msg + "\n");
